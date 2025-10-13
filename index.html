@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Phonebook Directory</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            transition: background-color 0.3s ease;
+        }
+
+        body.dark-mode {
+            background: #1f2937;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 20px 30px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode header {
+            background: #111827;
+            border-bottom-color: #374151;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #3b82f6;
+            letter-spacing: -0.5px;
+        }
+
+        .version {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            font-weight: 500;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1f2937;
+            transition: color 0.3s ease;
+        }
+
+        body.dark-mode h1 {
+            color: #f9fafb;
+        }
+
+        .dark-mode-toggle {
+            padding: 8px 16px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dark-mode-toggle:hover {
+            background: #f9fafb;
+            border-color: #3b82f6;
+        }
+
+        body.dark-mode .dark-mode-toggle {
+            background: #374151;
+            border-color: #4b5563;
+            color: #f9fafb;
+        }
+
+        body.dark-mode .dark-mode-toggle:hover {
+            background: #4b5563;
+            border-color: #6b7280;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .controls {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .controls {
+            background: #111827;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            font-size: 16px;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 12px 12px 12px 40px;
+            font-size: 0.875rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            transition: all 0.2s;
+            background: #f9fafb;
+            color: #1f2937;
+        }
+
+        #searchInput:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        body.dark-mode #searchInput {
+            background: #1f2937;
+            border-color: #4b5563;
+            color: #f9fafb;
+        }
+
+        body.dark-mode #searchInput:focus {
+            background: #374151;
+            border-color: #3b82f6;
+        }
+
+        .filter-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .filter-label {
+            font-weight: 500;
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-right: 8px;
+            transition: color 0.3s ease;
+        }
+
+        body.dark-mode .filter-label {
+            color: #9ca3af;
+        }
+
+        .location-filter {
+            padding: 6px 14px;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #4b5563;
+        }
+
+        .location-filter:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            color: #3b82f6;
+        }
+
+        .location-filter.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        body.dark-mode .location-filter {
+            background: #374151;
+            border-color: #4b5563;
+            color: #d1d5db;
+        }
+
+        body.dark-mode .location-filter:hover {
+            border-color: #3b82f6;
+            background: #1e3a8a;
+            color: #93c5fd;
+        }
+
+        body.dark-mode .location-filter.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .stats {
+            background: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .stats-text {
+            color: #6b7280;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .stats-count {
+            font-weight: 600;
+            color: #3b82f6;
+            font-size: 0.875rem;
+        }
+
+        body.dark-mode .stats {
+            background: #111827;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark-mode .stats-text {
+            color: #9ca3af;
+        }
+
+        .directory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .contact-card {
+            background: white;
+            padding: 16px 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+            border: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .contact-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark-mode .contact-card {
+            background: #111827;
+            border-color: #374151;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark-mode .contact-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+        }
+
+        .contact-info {
+            flex: 1;
+        }
+
+        .contact-name {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+            transition: color 0.3s ease;
+        }
+
+        .contact-extension {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #3b82f6;
+            margin-bottom: 6px;
+        }
+
+        body.dark-mode .contact-name {
+            color: #f9fafb;
+        }
+
+        .contact-location {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .contact-email {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .contact-email a {
+            color: #3b82f6;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: color 0.2s;
+        }
+
+        .contact-email a:hover {
+            color: #2563eb;
+            text-decoration: underline;
+        }
+
+        body.dark-mode .contact-email {
+            color: #9ca3af;
+        }
+
+        body.dark-mode .contact-email a {
+            color: #60a5fa;
+        }
+
+        body.dark-mode .contact-email a:hover {
+            color: #93c5fd;
+        }
+
+        .email-icon {
+            font-size: 0.9rem;
+        }
+
+        .contact-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 6px;
+        }
+
+        .tag-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: #e0e7ff;
+            color: #5b21b6;
+        }
+
+        .agent-icon {
+            font-size: 1.2rem;
+            margin-left: 8px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .loading {
+            background: #111827;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            color: #f9fafb;
+        }
+
+        .loading-spinner {
+            border: 3px solid #e5e7eb;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #fef2f2;
+            color: #991b1b;
+            padding: 12px 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 3px solid #dc2626;
+            font-size: 0.875rem;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 8px;
+            color: #6b7280;
+            transition: all 0.3s ease;
+        }
+
+        .no-results-icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+            opacity: 0.4;
+        }
+
+        body.dark-mode .no-results {
+            background: #111827;
+            color: #9ca3af;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .main-content {
+                padding: 20px 15px;
+            }
+
+            .directory-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .location-filter {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-section">
+                <div class="logo">FOP<span style="color: #10b981;">Panel</span></div>
+                <div class="version">v1.0.0</div>
+            </div>
+            <h1>Company Directory</h1>
+            <button class="dark-mode-toggle" id="darkModeToggle">
+                <span id="darkModeIcon">🌙</span>
+            </button>
+        </header>
+
+        <div class="main-content">
+        <div class="controls">
+            <div class="search-container">
+                <span class="search-icon">🔍</span>
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder="Search by name or extension..."
+                    autocomplete="off"
+                >
+            </div>
+            <div class="filter-container" id="filterContainer">
+                <span class="filter-label">Filter by tag:</span>
+                <button class="location-filter active" data-tag="all">All Tags</button>
+            </div>
+        </div>
+
+        <div class="stats">
+            <span class="stats-text">Showing <span class="stats-count" id="visibleCount">0</span> of <span class="stats-count" id="totalCount">0</span> contacts</span>
+        </div>
+
+        <div id="directoryContainer">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <p>Loading directory...</p>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <script>
+        let allContacts = [];
+        let filteredContacts = [];
+        let currentTagFilter = 'all';
+
+        const API_URL = '/api/directory';
+
+        // Fetch directory data from API
+        async function fetchDirectory() {
+            try {
+                const response = await fetch(API_URL);
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to load directory (${response.status})`);
+                }
+                
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to load directory');
+                }
+                
+                if (!data.contacts || data.contacts.length === 0) {
+                    throw new Error('No contacts found in directory');
+                }
+                
+                // Load contacts from API response
+                allContacts = data.contacts;
+                
+                // Generate dynamic location filters
+                generateLocationFilters();
+                
+                filteredContacts = [...allContacts];
+                renderDirectory();
+                updateStats();
+                
+            } catch (error) {
+                console.error('Error fetching directory:', error);
+                document.getElementById('directoryContainer').innerHTML = `
+                    <div class="error-message">
+                        <strong>Error loading directory:</strong> ${error.message}
+                        <br><br>
+                        <small>Please check your network connection and ensure the server is running properly.</small>
+                    </div>
+                `;
+            }
+        }
+
+        // Generate tag filter buttons dynamically
+        function generateLocationFilters() {
+            const tags = new Set();
+            allContacts.forEach(contact => {
+                if (contact.tags && contact.tags.length > 0) {
+                    contact.tags.forEach(tag => tags.add(tag));
+                }
+            });
+            
+            const sortedTags = Array.from(tags).sort();
+            const filterContainer = document.getElementById('filterContainer');
+            
+            // Add tag filter buttons
+            sortedTags.forEach(tag => {
+                const button = document.createElement('button');
+                button.className = 'location-filter';
+                button.dataset.tag = tag;
+                button.textContent = tag;
+                button.addEventListener('click', handleLocationFilter);
+                filterContainer.appendChild(button);
+            });
+        }
+
+        // Handle tag filter click
+        function handleLocationFilter(e) {
+            // Update active state
+            document.querySelectorAll('.location-filter').forEach(btn => 
+                btn.classList.remove('active')
+            );
+            e.target.classList.add('active');
+            
+            // Apply filter
+            currentTagFilter = e.target.dataset.tag;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            applyFilters(searchTerm, currentTagFilter);
+        }
+
+        // Render the directory
+        function renderDirectory() {
+            const container = document.getElementById('directoryContainer');
+            
+            if (filteredContacts.length === 0) {
+                container.innerHTML = `
+                    <div class="no-results">
+                        <div class="no-results-icon">🔍</div>
+                        <h3>No contacts found</h3>
+                        <p>Try adjusting your search or filter criteria</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const grid = document.createElement('div');
+            grid.className = 'directory-grid';
+            
+            filteredContacts.forEach(contact => {
+                const tagsHTML = contact.tags && contact.tags.length > 0 
+                    ? `<div class="contact-tags">${contact.tags.map(tag => `<span class="tag-badge">${tag}</span>`).join('')}</div>`
+                    : '';
+                
+                const agentIcon = contact.isAgent ? '<span class="agent-icon" title="Agent">👤</span>' : '';
+                
+                const emailHTML = contact.email 
+                    ? `<div class="contact-email">
+                        <a href="mailto:${contact.email}" title="Send email to ${contact.name}">
+                            <span class="email-icon">✉️</span>
+                            ${contact.email}
+                        </a>
+                    </div>`
+                    : '';
+                
+                const card = document.createElement('div');
+                card.className = 'contact-card';
+                card.innerHTML = `
+                    <div class="contact-info">
+                        <div class="contact-name">${contact.name}${agentIcon}</div>
+                        <div class="contact-extension">${contact.extension}</div>
+                        ${emailHTML}
+                        ${tagsHTML}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            
+            container.innerHTML = '';
+            container.appendChild(grid);
+        }
+
+        // Update statistics
+        function updateStats() {
+            document.getElementById('visibleCount').textContent = filteredContacts.length;
+            document.getElementById('totalCount').textContent = allContacts.length;
+        }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            applyFilters(searchTerm, currentTagFilter);
+        });
+
+        // Set up "All Tags" filter button
+        document.querySelector('.location-filter[data-tag="all"]').addEventListener('click', handleLocationFilter);
+
+        // Apply all filters
+        function applyFilters(searchTerm, tag) {
+            filteredContacts = allContacts.filter(contact => {
+                const matchesSearch = searchTerm === '' || 
+                    contact.name.toLowerCase().includes(searchTerm) ||
+                    contact.extension.includes(searchTerm) ||
+                    (contact.email && contact.email.toLowerCase().includes(searchTerm));
+                
+                const matchesTag = tag === 'all' || 
+                    (contact.tags && contact.tags.includes(tag));
+                
+                return matchesSearch && matchesTag;
+            });
+            
+            renderDirectory();
+            updateStats();
+        }
+
+        // Dark mode toggle
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const darkModeIcon = document.getElementById('darkModeIcon');
+        
+        // Check for saved dark mode preference
+        const isDarkMode = localStorage.getItem('darkMode') === 'true';
+        if (isDarkMode) {
+            document.body.classList.add('dark-mode');
+            darkModeIcon.textContent = '☀️';
+        }
+        
+        darkModeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            darkModeIcon.textContent = isDark ? '☀️' : '🌙';
+            localStorage.setItem('darkMode', isDark);
+        });
+
+        // Initialize
+        fetchDirectory();
+    </script>
+</body>
+</html>
