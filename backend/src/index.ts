@@ -4,6 +4,7 @@ import { config } from './config';
 import authRoutes from './routes/auth';
 import directoryRoutes from './routes/directory';
 import callsRoutes from './routes/calls';
+import devicesRoutes from './routes/devices';
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.get('/api/health', (_req: Request, res: Response) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/directory', directoryRoutes);
 app.use('/api/calls', callsRoutes);
+app.use('/api/devices', devicesRoutes);
 
 // 404 handler
 app.use((_req: Request, res: Response) => {

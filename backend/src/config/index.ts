@@ -10,6 +10,7 @@ export const config = {
     baseUrl: process.env.API_BASE_URL || '',
     loginEndpoint: process.env.LOGIN_ENDPOINT || '',
     listUsersEndpoint: process.env.LIST_USERS_ENDPOINT || '',
+    listDevicesEndpoint: process.env.LIST_DEVICES_ENDPOINT || '',
     accountId: process.env.ACCOUNT_ID || '',
   },
   
@@ -21,5 +22,10 @@ export const config = {
   
   cors: {
     origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  },
+  
+  sip: {
+    platformDomain: process.env.PLATFORM_DOMAIN || 'mobileuc.co.za',
+    wssUrl: process.env.WSS_URL || 'wss://mobileuc.co.za:5065',
   },
 };

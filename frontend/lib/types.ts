@@ -10,6 +10,7 @@ export interface User {
   username: string;
   domain: string;
   accountId: string;
+  userId: string;
 }
 
 export interface AuthResponse {
@@ -51,5 +52,21 @@ export interface CallStatus {
 export interface CallsResponse {
   success: boolean;
   calls?: CallStatus[];
+  error?: string;
+}
+
+export interface SipDevice {
+  id: string;
+  name: string;
+  sipUri: string;
+  username: string;
+  password: string;
+  domain: string;
+  wssUrl: string;
+}
+
+export interface DevicesResponse {
+  success: boolean;
+  devices?: SipDevice[];
   error?: string;
 }

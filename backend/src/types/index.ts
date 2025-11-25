@@ -8,6 +8,15 @@ export interface LoginRequest {
 
 export interface ExternalApiLoginResponse {
   access_token: string;
+  refresh_token?: string;
+  user?: {
+    _id: string;
+    username: string;
+    first_name: string;
+    last_name: string;
+    presence_id: string;
+    email?: string;
+  };
   token_type?: string;
   expires_in?: number;
 }
@@ -33,6 +42,7 @@ export interface JwtPayload {
   username: string;
   domain: string;
   accountId: string;
+  userId: string;
   externalToken: string;
   iat?: number;
   exp?: number;
@@ -45,6 +55,7 @@ export interface AuthResponse {
     username: string;
     domain: string;
     accountId: string;
+    userId: string;
   };
   error?: string;
 }
@@ -85,5 +96,55 @@ export interface CallStatus {
 export interface CallsResponse {
   success: boolean;
   calls?: CallStatus[];
+  error?: string;
+}
+
+export interface DeviceMedia {
+  audio: {
+    codecs: string[];
+  };
+  video: {
+    codecs: string[];
+  };
+  encryption: {
+    enforce_security: boolean;
+    methods: string[];
+  };
+  webrtc: boolean;
+}
+
+export interface DeviceSip {
+  username: string;
+  password: string;
+  expire_seconds: number;
+  invite_format: string;
+  method: string;
+}
+
+export interface Device {
+  _id: string;
+  name: string;
+  sip: DeviceSip;
+  media: DeviceMedia;
+  device_type: string;
+  enabled: boolean;
+  owner_id: string;
+  _rev?: string;
+  push?: any;
+}
+
+export interface SipDevice {
+  id: string;
+  name: string;
+  sipUri: string;
+  username: string;
+  password: string;
+  domain: string;
+  wssUrl: string;
+}
+
+export interface DevicesResponse {
+  success: boolean;
+  devices?: SipDevice[];
   error?: string;
 }

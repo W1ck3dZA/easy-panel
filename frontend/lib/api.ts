@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
-import { LoginCredentials, AuthResponse, DirectoryResponse, CallsResponse } from './types';
+import { LoginCredentials, AuthResponse, DirectoryResponse, CallsResponse, DevicesResponse } from './types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -95,6 +95,21 @@ class ApiClient {
       return {
         success: false,
         error: error.response?.data?.error || 'Failed to fetch active calls',
+      };
+    }
+  }
+
+  async getDevices(): Promise<DevicesResponse> {
+    try {
+      const response = await this.client.get<DevicesResponse>('/api/devices');
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        this.removeToken();
+      }
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Failed to fetch devices',
       };
     }
   }

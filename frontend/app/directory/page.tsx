@@ -31,12 +31,17 @@ import {
   CallMade,
   CallReceived,
   Download,
+  Devices as DevicesIcon,
+  ContentCopy,
+  Visibility,
+  VisibilityOff,
 } from '@mui/icons-material';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useSip } from '@/contexts/SipContext';
 import { apiClient } from '@/lib/api';
 import { CacheManager } from '@/lib/cache';
-import { Contact, CallStatus } from '@/lib/types';
+import { Contact, CallStatus, SipDevice } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
 
 export default function DirectoryPage() {
@@ -50,9 +55,15 @@ export default function DirectoryPage() {
   const [cacheAge, setCacheAge] = useState<number | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeCalls, setActiveCalls] = useState<CallStatus[]>([]);
+  const [devicesModalOpen, setDevicesModalOpen] = useState(false);
+  const [devices, setDevices] = useState<SipDevice[]>([]);
+  const [devicesLoading, setDevicesLoading] = useState(false);
+  const [devicesError, setDevicesError] = useState('');
+  const [passwordVisibility, setPasswordVisibility] = useState<Record<string, boolean>>({});
 
   const { user, isAuthenticated, logout } = useAuth();
   const { mode, toggleTheme } = useTheme();
+  const { dialNumber } = useSip();
   const router = useRouter();
 
   useEffect(() => {
@@ -227,6 +238,41 @@ export default function DirectoryPage() {
     loadDirectory(true);
   };
 
+  const loadDevices = async () => {
+    setDevicesLoading(true);
+    setDevicesError('');
+    
+    try {
+      const response = await apiClient.getDevices();
+      
+      if (response.success && response.devices) {
+        setDevices(response.devices);
+      } else {
+        setDevicesError(response.error || 'Failed to load devices');
+      }
+    } catch (err: any) {
+      setDevicesError(err.message || 'An error occurred');
+    } finally {
+      setDevicesLoading(false);
+    }
+  };
+
+  const handleDevicesClick = () => {
+    setDevicesModalOpen(true);
+    loadDevices();
+  };
+
+  const handleCopyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+  };
+
+  const togglePasswordVisibility = (deviceId: string) => {
+    setPasswordVisibility(prev => ({
+      ...prev,
+      [deviceId]: !prev[deviceId]
+    }));
+  };
+
   const handleDownloadContacts = () => {
     // Convert contacts to CSV format
     const headers = ['Name', 'Extension', 'Email', 'Tags'];
@@ -368,6 +414,13 @@ export default function DirectoryPage() {
             <Box sx={{ display: 'flex', gap: 1 }}>
               <Button
                 variant="outlined"
+                startIcon={<DevicesIcon />}
+                onClick={handleDevicesClick}
+              >
+                Devices
+              </Button>
+              <Button
+                variant="outlined"
                 startIcon={<Download />}
                 onClick={handleDownloadContacts}
                 disabled={filteredContacts.length === 0}
@@ -465,7 +518,15 @@ export default function DirectoryPage() {
                       <Typography
                         variant="h5"
                         color="primary"
-                        sx={{ fontSize: '1.1rem', fontWeight: 600 }}
+                        onClick={() => dialNumber(contact.extension)}
+                        sx={{ 
+                          fontSize: '1.1rem', 
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          '&:hover': {
+                            textDecoration: 'underline',
+                          },
+                        }}
                       >
                         {contact.extension}
                       </Typography>
@@ -544,6 +605,208 @@ export default function DirectoryPage() {
           </Box>
         )}
       </Container>
+
+      {/* Devices Modal */}
+      <Box
+        component="dialog"
+        open={devicesModalOpen}
+        sx={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '90%',
+          maxWidth: 800,
+          maxHeight: '80vh',
+          bgcolor: 'background.paper',
+          borderRadius: 2,
+          boxShadow: 24,
+          p: 0,
+          border: 'none',
+          display: devicesModalOpen ? 'block' : 'none',
+          overflow: 'hidden',
+          zIndex: 1300,
+        }}
+      >
+        <Box sx={{ p: 3, borderBottom: 1, borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h5" sx={{ fontWeight: 600, color: 'text.primary' }}>
+            SIP Devices
+          </Typography>
+          <IconButton onClick={() => setDevicesModalOpen(false)} sx={{ color: 'text.primary' }}>
+            <Logout sx={{ transform: 'rotate(180deg)' }} />
+          </IconButton>
+        </Box>
+
+        <Box sx={{ p: 3, maxHeight: 'calc(80vh - 100px)', overflowY: 'auto', bgcolor: 'background.paper' }}>
+          {devicesLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+              <CircularProgress />
+            </Box>
+          ) : devicesError ? (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {devicesError}
+            </Alert>
+          ) : devices.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 8 }}>
+              <DevicesIcon sx={{ fontSize: 48, opacity: 0.3, mb: 2, color: 'text.secondary' }} />
+              <Typography variant="h6" gutterBottom sx={{ color: 'text.primary' }}>
+                No WebRTC devices found
+              </Typography>
+              <Typography sx={{ color: 'text.secondary' }}>
+                No SIP devices with WebRTC support are available for your account.
+              </Typography>
+            </Box>
+          ) : (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {devices.map((device) => (
+                <Card key={device.id} variant="outlined" sx={{ bgcolor: 'background.default' }}>
+                  <CardContent>
+                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: 'text.primary' }}>
+                      {device.name}
+                    </Typography>
+
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                      {/* SIP URI */}
+                      <Box>
+                        <Typography variant="caption" sx={{ display: 'block', mb: 0.5, color: 'text.secondary' }}>
+                          SIP URI
+                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <TextField
+                            fullWidth
+                            size="small"
+                            value={device.sipUri}
+                            InputProps={{
+                              readOnly: true,
+                              sx: { 
+                                fontFamily: 'monospace', 
+                                fontSize: '0.9rem',
+                                color: 'text.primary',
+                                bgcolor: 'background.paper'
+                              }
+                            }}
+                          />
+                          <Tooltip title="Copy">
+                            <IconButton size="small" onClick={() => handleCopyToClipboard(device.sipUri)} sx={{ color: 'text.primary' }}>
+                              <ContentCopy fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      </Box>
+
+                      {/* Username */}
+                      <Box>
+                        <Typography variant="caption" sx={{ display: 'block', mb: 0.5, color: 'text.secondary' }}>
+                          Username
+                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <TextField
+                            fullWidth
+                            size="small"
+                            value={device.username}
+                            InputProps={{
+                              readOnly: true,
+                              sx: { 
+                                fontFamily: 'monospace', 
+                                fontSize: '0.9rem',
+                                color: 'text.primary',
+                                bgcolor: 'background.paper'
+                              }
+                            }}
+                          />
+                          <Tooltip title="Copy">
+                            <IconButton size="small" onClick={() => handleCopyToClipboard(device.username)} sx={{ color: 'text.primary' }}>
+                              <ContentCopy fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      </Box>
+
+                      {/* Password */}
+                      <Box>
+                        <Typography variant="caption" sx={{ display: 'block', mb: 0.5, color: 'text.secondary' }}>
+                          Password
+                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <TextField
+                            fullWidth
+                            size="small"
+                            type={passwordVisibility[device.id] ? 'text' : 'password'}
+                            value={device.password}
+                            InputProps={{
+                              readOnly: true,
+                              sx: { 
+                                fontFamily: 'monospace', 
+                                fontSize: '0.9rem',
+                                color: 'text.primary',
+                                bgcolor: 'background.paper'
+                              }
+                            }}
+                          />
+                          <Tooltip title={passwordVisibility[device.id] ? 'Hide' : 'Show'}>
+                            <IconButton size="small" onClick={() => togglePasswordVisibility(device.id)} sx={{ color: 'text.primary' }}>
+                              {passwordVisibility[device.id] ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Copy">
+                            <IconButton size="small" onClick={() => handleCopyToClipboard(device.password)} sx={{ color: 'text.primary' }}>
+                              <ContentCopy fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      </Box>
+
+                      {/* Domain */}
+                      <Box>
+                        <Typography variant="caption" sx={{ display: 'block', mb: 0.5, color: 'text.secondary' }}>
+                          Domain
+                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <TextField
+                            fullWidth
+                            size="small"
+                            value={device.domain}
+                            InputProps={{
+                              readOnly: true,
+                              sx: { 
+                                fontFamily: 'monospace', 
+                                fontSize: '0.9rem',
+                                color: 'text.primary',
+                                bgcolor: 'background.paper'
+                              }
+                            }}
+                          />
+                          <Tooltip title="Copy">
+                            <IconButton size="small" onClick={() => handleCopyToClipboard(device.domain)} sx={{ color: 'text.primary' }}>
+                              <ContentCopy fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
+              ))}
+            </Box>
+          )}
+        </Box>
+      </Box>
+
+      {/* Modal backdrop */}
+      {devicesModalOpen && (
+        <Box
+          onClick={() => setDevicesModalOpen(false)}
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            bgcolor: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 1299,
+          }}
+        />
+      )}
     </Box>
   );
 }

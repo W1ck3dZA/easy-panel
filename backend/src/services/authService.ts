@@ -26,16 +26,22 @@ export class AuthService {
       );
 
       const externalToken = response.data.access_token;
+      const userId = response.data.user?._id;
 
       if (!externalToken) {
         throw new Error('Access token not found in login response');
       }
 
-      // Generate JWT with embedded external token and account ID
+      if (!userId) {
+        throw new Error('User ID not found in login response');
+      }
+
+      // Generate JWT with embedded external token, account ID, and user ID
       const payload: JwtPayload = {
         username: credentials.username,
         domain: credentials.domain,
         accountId: credentials.accountId,
+        userId,
         externalToken,
       };
 
@@ -57,6 +63,7 @@ export class AuthService {
           username: credentials.username,
           domain: credentials.domain,
           accountId: credentials.accountId,
+          userId,
         },
       };
     } catch (error: any) {
